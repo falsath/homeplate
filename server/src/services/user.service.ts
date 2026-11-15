@@ -1,15 +1,22 @@
 import bcrypt from 'bcryptjs'
-import {UserRepository} from '../repositories/user.repository';
+import {IUserRepository} from '../repositories/user.repository';
 
-export class UserService{
-    private userRepo:UserRepository;
+export interface IUserService{
+   
+    registerUser(userData:any):Promise<any>;
 
-    constructor(){
-        this.userRepo=new UserRepository()
-    }
+}    
 
+export class UserService implements IUserService {
 
-    async registerUser(userData:any){
+    private userRepo:IUserRepository;
+
+    constructor(userRepo:IUserRepository){
+        this.userRepo=userRepo
+    }  
+    
+    
+     async registerUser(userData:any){
         const {name,email,password,phone,role}=userData;
 
         const  userExist=await this.userRepo.findUserByEmail(email)
@@ -30,10 +37,10 @@ export class UserService{
             phone,
             password:hashedPassword,
             role:role||"customer",
-            isVarified:false,
+            isVerified:false,
             otp:{
                 code:otpCode,
-                expireAt,
+                expiresAt:expireAt,
             },
         })
 
@@ -41,4 +48,8 @@ export class UserService{
 
     }
 
+
+    
 }
+
+   

@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs'
 import {IUserRepository} from '../repositories/user.repository';
+import {RegisterUserDto,RegisterResponseDto} from '../types/user.types'
 
 export interface IUserService{
    
-    registerUser(userData:any):Promise<any>;
+    registerUser(dto:RegisterUserDto):Promise<RegisterResponseDto>;
 
 }    
 
@@ -16,12 +17,12 @@ export class UserService implements IUserService {
     }  
     
     
-     async registerUser(userData:any){
-        const {name,email,password,phone,role}=userData;
+     async registerUser(dto:RegisterUserDto):Promise<RegisterResponseDto>{
+        const {name,email,password,phone,role}=dto;
 
         const  userExist=await this.userRepo.findUserByEmail(email)
         if(userExist){
-            throw new Error("This email is already exist")
+            throw new Error("This email is already registered")
         }
 
         const hashedPassword=await bcrypt.hash(password,10);
@@ -44,7 +45,11 @@ export class UserService implements IUserService {
             },
         })
 
-    return newUser;
+    return {
+        id:newUser._id.toString(),
+        name:newUser.name,
+        email:newUser.email,
+    };
 
     }
 

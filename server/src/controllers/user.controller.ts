@@ -1,5 +1,6 @@
 import {Request,Response} from 'express'
 import {IUserService} from '../services/user.service'
+import { RegisterUserDto,RegisterResponseDto,ApiResponse,HttpStatus } from '../types/user.types';
 
 
 
@@ -10,27 +11,28 @@ export class UserController{
         this.userService= userService;
     }
 
-    register=async (req:Request,res:Response):Promise<void>=>{
+    register=async (req:Request<{},{},RegisterUserDto>,res:Response<ApiResponse<RegisterResponseDto>>):Promise<void>=>{
 
         try{
-            const userData=req.body
-            const newUser=await this.userService.registerUser(userData);
+            const userData:RegisterUserDto=req.body
+            const registeredUser=await this.userService.registerUser(userData);
 
-            res.status(201).json({
+            res.status(HttpStatus.CREATED).json({
                 success:true,
                 message:"Registration is successful,please verify the otp sent to your email",
-                data:{
-                    id:newUser._id,
-                    name:newUser.name,
-                    email:newUser.email,
-                },
-
+                data: registeredUser,               
+                
             });
 
-        }catch(error:any){
-            res.status(400).json({
+        }catch(error:unknown){
+
+            const errorMessage=error instanceof Error?error.message:"An unexpected error occured"
+
+             
+
+            res.status(HttpStatus.BAD_REQUEST).json({
                 success:false,
-                message:error.message,
+                message:errorMessage,
             })
             
         }
